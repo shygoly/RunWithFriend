@@ -130,7 +130,8 @@ class Facebook(object):
             payload=urllib.urlencode(params),
             method=urlfetch.POST,
             headers={
-                u'Content-Type': u'application/x-www-form-urlencoded'}).content)
+                u'Content-Type': u'application/x-www-form-urlencoded'})
+            .content)
         if isinstance(result, dict) and u'error' in result:
             raise FacebookApiError(result)
         return result
@@ -236,7 +237,10 @@ class BaseHandler(webapp.RequestHandler):
         # initial facebook request comes in as a POST with a signed_request
         if u'signed_request' in self.request.POST:
             facebook.load_signed_request(self.request.get('signed_request'))
-            self.request.method = u'GET'  # causes loss of request.POST data
+            # we reset the method to GET because a request from facebook with a
+            # signed_request uses POST for security reasons, despite it
+            # actually being a GET. in webapp causes loss of request.POST data.
+            self.request.method = u'GET'
             self.set_cookie(
                 'u', facebook.user_cookie, datetime.timedelta(minutes=1440))
         elif 'u' in self.request.cookies:

@@ -23,6 +23,7 @@ import hashlib
 import hmac
 import logging
 import time
+import traceback
 import urllib
 
 
@@ -72,7 +73,6 @@ class User(db.Model):
         """Refresh this user's data using the Facebook Graph API"""
         me = Facebook().api(u'/me',
             {u'fields': u'picture,friends', u'access_token': self.access_token})
-        logging.info(u'/me API call response: ' + unicode(me))
         self.dirty = False
         self.name = me[u'name']
         self.email = me.get(u'email')
@@ -184,16 +184,18 @@ class BaseHandler(webapp.RequestHandler):
         """General initialization for every request"""
         super(BaseHandler, self).initialize(request, response)
 
-        self.init_facebook()
-        self.init_csrf()
-        self.response.headers[u'P3P'] = u'CP=HONK'  # cookies in iframes in IE
+        try:
+            self.init_facebook()
+            self.init_csrf()
+            self.response.headers[u'P3P'] = u'CP=HONK'  # cookies in iframes in IE
+        except:
+            logging.error('initialize: \n' + traceback.format_exc())
+            raise
 
     def handle_exception(self, exception, debug_mode):
-        if debug_mode:
-            super(BaseHandler, self).handle_exception(exception, debug_mode)
-        else:
-            logging.error(exception)
-            self.render(u'error', error=exception)
+        trace = traceback.format_exc()
+        logging.error('handle_exception: \n' + trace)
+        self.render(u'error', trace=trace, debug_mode=debug_mode)
 
     def set_cookie(self, name, value, expires=None):
         """Set a cookie"""
@@ -264,7 +266,6 @@ class BaseHandler(webapp.RequestHandler):
 
             if not user and facebook.access_token:
                 me = facebook.api(u'/me', {u'fields': u'picture,friends'})
-                logging.info(u'/me API call response: ' + unicode(me))
                 user = User(key_name=facebook.user_id,
                     user_id=facebook.user_id,
                     access_token=facebook.access_token,

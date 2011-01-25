@@ -29,7 +29,7 @@ function goHome() {
 
 function setDateFields(date) {
   document.getElementById('date_year').value = date.getFullYear();
-  document.getElementById('date_month').value = date.getMonth();
+  document.getElementById('date_month').value = date.getMonth() + 1;
   document.getElementById('date_day').value = date.getDate();
 }
 function dateToday() {

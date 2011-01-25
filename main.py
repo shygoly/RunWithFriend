@@ -454,9 +454,9 @@ class RealtimeHandler(BaseHandler):
 
 
 class RefreshUserHandler(BaseHandler):
+    """Used as an App Engine Task to refresh a single user's data if possible"""
     csrf_protect = False
 
-    """Refresh user data using if possible"""
     def post(self, user_id):
         logging.info('Refreshing user data for ' + user_id)
         user = User.get_by_key_name(user_id)

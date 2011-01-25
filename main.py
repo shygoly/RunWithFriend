@@ -12,6 +12,7 @@ from google.appengine.api import urlfetch
 from google.appengine.api.labs import taskqueue
 from google.appengine.ext import db, webapp
 from google.appengine.ext.webapp import util, template
+from google.appengine.runtime import DeadlineExceededError
 from random import randrange
 from uuid import uuid4
 import Cookie
@@ -187,15 +188,26 @@ class BaseHandler(webapp.RequestHandler):
         try:
             self.init_facebook()
             self.init_csrf()
-            self.response.headers[u'P3P'] = u'CP=HONK'  # cookies in iframes in IE
-        except:
-            logging.error('initialize: \n' + traceback.format_exc())
+            self.response.headers[u'P3P'] = u'CP=HONK'  # iframe cookies in IE
+        except Exception, ex:
+            self.log_exception(ex)
             raise
 
-    def handle_exception(self, exception, debug_mode):
-        trace = traceback.format_exc()
-        logging.error('handle_exception: \n' + trace)
-        self.render(u'error', trace=trace, debug_mode=debug_mode)
+    def handle_exception(self, ex, debug_mode):
+        """Invoked for unhandled exceptions by webapp"""
+        self.log_exception(ex)
+        self.render(u'error',
+            trace=traceback.format_exc(), debug_mode=debug_mode)
+
+    def log_exception(self, ex):
+        """Internal logging handler to reduce some App Engine noise in errors"""
+        msg = ((str(ex) or ex.__class__.__name__) +
+                u': \n' + traceback.format_exc())
+        if isinstance(ex, urlfetch.DownloadError) or \
+           isinstance(ex, DeadlineExceededError):
+            logging.warn(msg)
+        else:
+            logging.error(msg)
 
     def set_cookie(self, name, value, expires=None):
         """Set a cookie"""

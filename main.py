@@ -218,7 +218,8 @@ class BaseHandler(webapp.RequestHandler):
         msg = ((str(ex) or ex.__class__.__name__) +
                 u': \n' + traceback.format_exc())
         if isinstance(ex, urlfetch.DownloadError) or \
-           isinstance(ex, DeadlineExceededError):
+           isinstance(ex, DeadlineExceededError) or \
+           isinstance(ex, taskqueue.TransientError):
             logging.warn(msg)
         else:
             logging.error(msg)

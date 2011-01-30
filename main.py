@@ -153,18 +153,22 @@ class Facebook(object):
 
     def load_signed_request(self, signed_request):
         """Load the user state from a signed_request value"""
-        sig, payload = signed_request.split(u'.', 1)
-        sig = self.base64_url_decode(sig)
-        data = json.loads(self.base64_url_decode(payload))
+        try:
+            sig, payload = signed_request.split(u'.', 1)
+            sig = self.base64_url_decode(sig)
+            data = json.loads(self.base64_url_decode(payload))
 
-        expected_sig = hmac.new(
-            self.app_secret, msg=payload, digestmod=hashlib.sha256).digest()
+            expected_sig = hmac.new(
+                self.app_secret, msg=payload, digestmod=hashlib.sha256).digest()
 
-        # allow the signed_request to function for upto 1 day
-        if sig == expected_sig and data[u'issued_at'] > (time.time() - 86400):
-            self.signed_request = data
-            self.user_id = data.get(u'user_id')
-            self.access_token = data.get(u'oauth_token')
+            # allow the signed_request to function for upto 1 day
+            if sig == expected_sig and \
+                    data[u'issued_at'] > (time.time() - 86400):
+                self.signed_request = data
+                self.user_id = data.get(u'user_id')
+                self.access_token = data.get(u'oauth_token')
+        except ValueError, ex:
+            pass # ignore if can't split on dot
 
     @property
     def user_cookie(self):
@@ -293,14 +297,15 @@ class BaseHandler(webapp.RequestHandler):
 
             if not user and facebook.access_token:
                 me = facebook.api(u'/me', {u'fields': u'picture,friends'})
-                user = User(key_name=facebook.user_id,
-                    user_id=facebook.user_id,
-                    access_token=facebook.access_token,
-                    name=me[u'name'],
-                    email=me.get(u'email'),  # optional
-                    picture=me[u'picture'],
-                    friends=[user[u'id'] for user in me[u'friends'][u'data']])
-                user.put()
+                try:
+                    friends = [user[u'id'] for user in me[u'friends'][u'data']]
+                    user = User(key_name=facebook.user_id,
+                        user_id=facebook.user_id, friends=friends,
+                        access_token=facebook.access_token, name=me[u'name'],
+                        email=me.get(u'email'), picture=me[u'picture'])
+                    user.put()
+                except KeyError, ex:
+                    pass # ignore if can't get the minimum fields
 
         self.facebook = facebook
         self.user = user

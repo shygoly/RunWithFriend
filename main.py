@@ -194,6 +194,10 @@ class Facebook(object):
         return base64.urlsafe_b64encode(data).rstrip('=')
 
 
+class CsrfException(Exception):
+    pass
+
+
 class BaseHandler(webapp.RequestHandler):
     facebook = None
     user = None
@@ -223,6 +227,7 @@ class BaseHandler(webapp.RequestHandler):
                 u': \n' + traceback.format_exc())
         if isinstance(ex, urlfetch.DownloadError) or \
            isinstance(ex, DeadlineExceededError) or \
+           isinstance(ex, CsrfException) or \
            isinstance(ex, taskqueue.TransientError):
             logging.warn(msg)
         else:
@@ -318,7 +323,7 @@ class BaseHandler(webapp.RequestHandler):
             self.set_cookie('c', self.csrf_token)
         if self.request.method == u'POST' and self.csrf_protect and \
                 self.csrf_token != self.request.POST.get(u'_csrf_token'):
-            raise Exception(u'Missing or invalid CSRF token.')
+            raise CsrfException(u'Missing or invalid CSRF token.')
 
     def set_message(self, **obj):
         """Simple message support"""

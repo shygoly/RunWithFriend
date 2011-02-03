@@ -22,8 +22,7 @@ os.environ[u'DJANGO_SETTINGS_MODULE'] = u'conf'
 from django.template.defaultfilters import register
 from django.utils import simplejson as json
 from functools import wraps
-from google.appengine.api import urlfetch
-from google.appengine.api.labs import taskqueue
+from google.appengine.api import urlfetch, taskqueue
 from google.appengine.ext import db, webapp
 from google.appengine.ext.webapp import util, template
 from google.appengine.runtime import DeadlineExceededError

@@ -122,6 +122,9 @@ class FacebookApiError(Exception):
     def __init__(self, result):
         self.result = result
 
+    def __str__(self):
+        return self.__class__.__name__ + ': ' + json.dumps(result)
+
 
 class Facebook(object):
     """Wraps the Facebook specific logic"""

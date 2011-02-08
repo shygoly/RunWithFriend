@@ -122,7 +122,7 @@ class FacebookApiError(Exception):
         self.result = result
 
     def __str__(self):
-        return self.__class__.__name__ + ': ' + json.dumps(result)
+        return self.__class__.__name__ + ': ' + json.dumps(self.result)
 
 
 class Facebook(object):

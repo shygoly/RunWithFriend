@@ -19,6 +19,9 @@ import os
 # dummy config to enable registering django template filters
 os.environ[u'DJANGO_SETTINGS_MODULE'] = u'conf'
 
+from google.appengine.dist import use_library
+use_library('django', '1.2')
+
 from django.template.defaultfilters import register
 from django.utils import simplejson as json
 from functools import wraps

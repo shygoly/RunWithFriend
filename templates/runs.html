@@ -19,7 +19,7 @@
         <tr>
           <td>{{ run.date }}</td>
           <td>{{ run.pretty_distance }}</td>
-          <td>{{ run.location|escape }}</td>
+          <td>{{ run.location }}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -76,7 +76,7 @@
              src="{{ friends|get_picture:run.user_id }}">
 
         <a class="name" href="/user/{{ run.user_id }}">
-          {{ friends|get_name:run.user_id|escape }}
+          {{ friends|get_name:run.user_id }}
         </a>
         <div style="clear: both;"></div>
       </div>

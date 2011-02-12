@@ -16,7 +16,7 @@
           <div id="user-info">
             <div class="info">
               <a class="name" href="/user/{{ logged_in_user.user_id }}">
-                {{ logged_in_user.name|escape }}
+                {{ logged_in_user.name }}
               </a>
               <a class="logout" onclick="FB.logout()">Logout</a>
             </div>
@@ -27,7 +27,7 @@
       </div>
 
       {% if message %}
-        <div class="message {{ message.type }}">{{ message.content }}</div>
+        <div class="message {{ message.type }}">{{ message.content|safe }}</div>
       {% endif %}
 
       <div class="bd">
@@ -50,7 +50,7 @@
     <div id="fb-root"></div>
     <script>
       {# async loading of facebook js sdk #}
-      window.fbAsyncInit = function() { facebookInit({{ js_conf }}) };
+      window.fbAsyncInit = function() { facebookInit({{ js_conf|safe }}) };
       (function() {
         var e = document.createElement('script');
         e.src = document.location.protocol + '//connect.facebook.net/en_US/all.js';

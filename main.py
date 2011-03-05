@@ -77,6 +77,7 @@ def select_random(lst, limit):
     return final
 
 
+_USER_FIELDS = u'name,email,picture,friends'
 class User(db.Model):
     user_id = db.StringProperty(required=True)
     access_token = db.StringProperty(required=True)
@@ -89,7 +90,7 @@ class User(db.Model):
     def refresh_data(self):
         """Refresh this user's data using the Facebook Graph API"""
         me = Facebook().api(u'/me',
-            {u'fields': u'picture,friends', u'access_token': self.access_token})
+            {u'fields': _USER_FIELDS, u'access_token': self.access_token})
         self.dirty = False
         self.name = me[u'name']
         self.email = me.get(u'email')
@@ -306,7 +307,7 @@ class BaseHandler(webapp.RequestHandler):
                     facebook.access_token = user.access_token
 
             if not user and facebook.access_token:
-                me = facebook.api(u'/me', {u'fields': u'picture,friends'})
+                me = facebook.api(u'/me', {u'fields': _USER_FIELDS})
                 try:
                     friends = [user[u'id'] for user in me[u'friends'][u'data']]
                     user = User(key_name=facebook.user_id,
@@ -487,7 +488,7 @@ class RealtimeHandler(BaseHandler):
             u'access_token': conf.FACEBOOK_APP_ID + u'|' +
                              conf.FACEBOOK_APP_SECRET,
             u'object': u'user',
-            u'fields': u'name,email,picture,friends',
+            u'fields': _USER_FIELDS,
             u'callback_url': conf.EXTERNAL_HREF + u'realtime',
             u'verify_token': conf.FACEBOOK_REALTIME_VERIFY_TOKEN,
         }
